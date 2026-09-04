@@ -8,8 +8,16 @@ except ImportError:
 CONN = (os.getenv("AZURE_STORAGE_CONNECTION_STRING")
         or os.getenv("COSMOS_CONNECTION_STRING") or "").strip()
 if not CONN or "<" in CONN:
-    sys.exit("✗ .env still has the placeholder. Open .env and paste your real "
-             "connection string after COSMOS_CONNECTION_STRING=")
+    sys.exit(
+        "✗ No connection string found.\n\n"
+        "  The scripts read a file called  .env  (not .env.example).\n"
+        "  If you edited .env.example by mistake:\n\n"
+        "      copy .env.example .env      (Windows)\n"
+        "      cp   .env.example .env      (Linux/macOS)\n"
+        "      git checkout .env.example   <- puts the template back, so your\n"
+        "                                     key is not in a tracked file\n\n"
+        "  Then open .env and paste your string after:\n"
+        "      AZURE_STORAGE_CONNECTION_STRING=")
 
 from azure.data.tables import TableServiceClient
 from azure.core.exceptions import AzureError

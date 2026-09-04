@@ -13,7 +13,13 @@ reconciliation), with per-date Excel export.
 
 Then open **http://localhost:8000**.
 
-Needs `.env` with `AZURE_STORAGE_CONNECTION_STRING` (copy `.env.example`).
+Needs a `.env` file with `AZURE_STORAGE_CONNECTION_STRING`:
+
+    copy .env.example .env      # Windows  (cp on Linux/macOS)
+
+Then paste your connection string into **`.env`** — not `.env.example`.
+`.env` is gitignored; `.env.example` is tracked, so a key left there gets
+committed.
 Nothing else — no Docker, no Azure, no OpenAI key, no licence.
 
 
