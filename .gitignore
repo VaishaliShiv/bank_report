@@ -1,0 +1,30 @@
+# ─── secrets: never commit ───────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ─── live business data: broad patterns on purpose ───────────
+# Anything holding real bank names, vendor IDs or AED figures.
+*blueprint*
+*mockup*
+dashboard_data.json
+sample_data.json
+VERIFICATION*
+*.xlsx
+*.csv
+
+# ─── build / packaging ───────────────────────────────────────
+*.zip
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# ─── editor / os ─────────────────────────────────────────────
+.~lock.*
+.DS_Store
+.idea/
+.vscode/

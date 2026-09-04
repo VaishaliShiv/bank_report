@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bank Reconciliation Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <div>
+      <div class="eyebrow">Finance Operations</div>
+      <h1>Bank Reconciliation</h1>
+      <p class="tagline">Daily partner-file to SAP matching, source completion and exception review.</p>
+    </div>
+  </header>
+
+  <div class="ctrlbar">
+    <div class="datenav">
+      <button id="prev" title="Previous date with data" aria-label="Previous date">&#8249;</button>
+      <input type="date" id="dpick" aria-label="Business date">
+      <button id="next" title="Next date with data" aria-label="Next date">&#8250;</button>
+    </div>
+    <div class="seg" role="group" aria-label="Filter sources">
+      <button data-f="all" aria-pressed="true">All <b id="cAll"></b></button>
+      <button data-f="ok" aria-pressed="false">Reconciled <b id="cOk"></b></button>
+      <button data-f="bad" aria-pressed="false">Needs action <b id="cBad"></b></button>
+    </div>
+    <input class="search" id="q" type="search" placeholder="Search bank, vendor ID, or assessment&hellip;" aria-label="Search">
+    <button class="dl" id="dl">&#8595;&nbsp; Download Excel</button>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+  <div id="page"></div>
+
+  <footer class="foot">
+    <span><b>Source</b> Azure Table &middot; summarylogs</span>
+    <span><b>Dedup</b> latest run per vendor per day</span>
+    <span><b>Assessment</b> written at reconciliation time, never regenerated</span>
+    <span><b>Not shown</b> anomaly line-item detail &mdash; not persisted upstream</span>
+  </footer>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
