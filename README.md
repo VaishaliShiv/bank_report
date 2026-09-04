@@ -8,8 +8,13 @@ reconciliation), with per-date Excel export.
 
 ## Run it
 
-**Windows** — double-click `run_api.bat`
-**Linux/macOS** — `./run_api.sh`
+**First time, Windows** — double-click `setup.bat`. It creates the environment,
+installs dependencies, asks for your connection string, writes `.env` for you,
+and tests the connection. No file editing.
+
+**After that** — double-click `run_api.bat`.
+
+**Linux/macOS** — `python3 setup_env.py` once, then `./run_api.sh`.
 
 Then open **http://localhost:8000**.
 
