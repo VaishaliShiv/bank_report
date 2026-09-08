@@ -102,7 +102,8 @@ function barsHTML(vals, fmt){
   const max = Math.max(...vals.map(v=>v[1]), 1);
   return vals.sort((a,b)=>b[1]-a[1]).map(([n,v,unrec])=>
     `<div class="bar"><span class="bn" title="${n}${unrec?" - not reconciled":""}">
-        ${unrec?'<i class="sdot" aria-label="not reconciled"></i>':""}${n}</span>
+        ${unrec?'<i class="sdot" role="img" aria-label="not reconciled"></i>':""}
+        <span class="bnm">${n}</span></span>
       <span class="blane"><span class="track"><span class="fill"
         style="width:${Math.max(v/max*100,1.2)}%"></span></span>
       <span class="bv${unrec?" unrec":""}">${fmt(v)}</span></span></div>`).join("");
