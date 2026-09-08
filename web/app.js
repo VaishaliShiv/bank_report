@@ -96,12 +96,16 @@ function excCharts(r){
 }
 
 function barsHTML(vals, fmt){
+  // One colour for every bar: the chart's job is ranking, and a second hue
+  // competes with that. Status is flagged with a dot and the value colour,
+  // which stays legible even when most sources have not reconciled.
   const max = Math.max(...vals.map(v=>v[1]), 1);
-  return vals.sort((a,b)=>b[1]-a[1]).map(([n,v,dim])=>
-    `<div class="bar"><span class="bn" title="${n}">${n}</span>
-      <span class="blane"><span class="track"><span class="fill ${dim?"grey":""}"
+  return vals.sort((a,b)=>b[1]-a[1]).map(([n,v,unrec])=>
+    `<div class="bar"><span class="bn" title="${n}${unrec?" - not reconciled":""}">
+        ${unrec?'<i class="sdot" aria-label="not reconciled"></i>':""}${n}</span>
+      <span class="blane"><span class="track"><span class="fill"
         style="width:${Math.max(v/max*100,1.2)}%"></span></span>
-      <span class="bv">${fmt(v)}</span></span></div>`).join("");
+      <span class="bv${unrec?" unrec":""}">${fmt(v)}</span></span></div>`).join("");
 }
 
 /* ---------- page ---------- */
@@ -224,22 +228,28 @@ function render(){
       ${excHTML}
     </section>
 
+    ${all.length < 3 ? `<section class="panel" style="margin-top:15px">
+      <div class="ph"><div><h3>Source comparison</h3>
+        <p>Ranking charts appear when three or more sources reported</p></div></div>
+      <div class="chartskip">Only ${all.length} source${all.length===1?"":"s"} on this date &mdash;
+        the table below already shows everything a ranking chart would.</div>
+    </section>` : `
     <div class="grid-half" style="margin-top:15px">
       <section class="panel">
         <div class="ph"><div><h3>Reconciled amount by source</h3><p>Ranked by AED value</p></div></div>
         <div class="pb"><div class="bars">${barsHTML(
           all.map(r=>[r.source, r.amountPartner, r.status!=="Reconciled"]), v=>"AED "+abbr(v))}</div>
-          <p style="margin:13px 0 0;font-size:11px;color:var(--ink-3)">
-            Grey bars did not reconcile &mdash; the value is reported, not confirmed.</p></div>
+          <p class="chartnote">A red dot marks a source that did not reconcile
+            &mdash; its value is reported, not confirmed.</p></div>
       </section>
       <section class="panel">
         <div class="ph"><div><h3>Transaction volume</h3><p>Records processed per source</p></div></div>
         <div class="pb"><div class="bars">${barsHTML(
           all.map(r=>[r.source, r.recordsPartner, r.status!=="Reconciled"]), int)}</div>
-          <p style="margin:13px 0 0;font-size:11px;color:var(--ink-3)">
-            Volume and value rank differently &mdash; that gap is where risk hides.</p></div>
+          <p class="chartnote">Volume and value rank differently &mdash;
+            that gap is where risk hides.</p></div>
       </section>
-    </div>
+    </div>`}
 
     <section class="panel" style="margin-top:15px">
       <div class="ph"><div><h3>Reconciliation detail</h3>

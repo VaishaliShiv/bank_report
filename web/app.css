@@ -163,7 +163,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .track{flex:1;height:18px;background:var(--surface-3);border-radius:4px;overflow:hidden;min-width:2px}
 .fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal-dk),var(--teal-lt));
   min-width:3px;transition:width .45s cubic-bezier(.4,0,.2,1)}
-.fill.grey{background:var(--border-strong)}
+.bar .bn .sdot{display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--red);margin-right:6px;vertical-align:middle}
+.bar .bv.unrec{color:var(--red-dk)}
+.chartnote{margin:13px 0 0;font-size:11px;color:var(--ink-3)}
+.chartskip{padding:26px 18px;text-align:center;color:var(--ink-3);font-size:12.5px}
 .bar .bv{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12.5px;
   font-weight:700;white-space:nowrap}
 @media(prefers-reduced-motion:reduce){.fill{transition:none}}
