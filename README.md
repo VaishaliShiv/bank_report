@@ -28,13 +28,42 @@ committed.
 Nothing else — no Docker, no Azure, no OpenAI key, no licence.
 
 
+## API
+
+`GET /api/v1/report/2026-07-21` returns one document for that date:
+
+| Block | What |
+|---|---|
+| `summary` | headline counts, amounts, anomalies by type, three rates |
+| `dedup` | which rule was applied and how many runs it collapsed |
+| `sources` | one entry per vendor — deduplicated. **What you report.** |
+| `runs` | every raw table row, all columns. **What you prove it from.** |
+| `exceptions` | vendor IDs needing action, worst difference first |
+
+Every raw run carries `isAuthoritative` and `supersededBy`, so a dropped row can
+always be traced to the one that replaced it. The table is a run log; a control
+report that silently discards rows is not auditable.
+
+| Endpoint | |
+|---|---|
+| `/api/v1/dates` | dates with source and run counts |
+| `/api/v1/report/latest` | most recent date |
+| `/api/v1/report/{date}` | full document (`?runs=false` to omit raw rows) |
+| `/api/v1/report/{date}/sources` | deduplicated sources only |
+| `/api/v1/report/{date}/runs` | raw rows (`?vendorId=`, `?authoritativeOnly=`) |
+
+`404` names the dates that do exist; `422` explains the date format.
+
+`exposure` is declared on every source and run but is always `null` — the
+narrative cites an exposure figure that the pipeline does not persist.
+
 ## Layout
 
 | Path | What |
 |---|---|
 | `web/` | **The dashboard.** Served at `/` by the API |
 | `recon/dedup.py` | The dedup + derived-field rules. The heart of this repo. |
-| `api/` | FastAPI service behind the download button |
+| `api/` | FastAPI: dashboard, JSON API, Excel export |
 | `tests/` | 18 tests — dedup rules and config guards |
 | `run_api.bat` / `.sh` | Local launchers |
 | `deploy/`, `Dockerfile` | **Azure only. Not needed locally — ignore for now.** |

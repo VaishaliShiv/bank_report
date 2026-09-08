@@ -19,6 +19,7 @@ load_dotenv()
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from api import excel, store  # noqa: E402
+from api.routes_report import router as report_router  # noqa: E402
 from api.config import settings  # noqa: E402
 
 logging.basicConfig(
@@ -40,6 +41,8 @@ app.add_middleware(
     allow_origins=CFG.cors_origins or ["http://localhost:3000"],
     allow_methods=["GET"], allow_headers=["x-api-key"],
 )
+
+app.include_router(report_router)
 
 XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 WEB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web")

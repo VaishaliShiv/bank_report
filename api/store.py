@@ -13,7 +13,7 @@ from api.config import settings
 from recon.dedup import dedupe, enrich
 
 _lock = threading.Lock()
-_cache: dict = {"at": 0.0, "rows": None}
+_cache: dict = {"at": 0.0, "rows": None, "raw_at": 0.0, "raw": None}
 
 
 def _client():
@@ -29,7 +29,33 @@ def _client():
 
 
 def _fetch_raw() -> list[dict]:
-    return [dict(e) for e in _client().list_entities()]
+    """Rows as plain dicts. The service Timestamp lives in entity metadata,
+    which dict() drops, so lift it onto the row."""
+    out = []
+    for e in _client().list_entities():
+        row = dict(e)
+        if "Timestamp" not in row:
+            meta = getattr(e, "metadata", None) or {}
+            ts = meta.get("timestamp")
+            if ts is not None:
+                row["Timestamp"] = ts
+        out.append(row)
+    return out
+
+
+def raw_rows(force: bool = False) -> list[dict]:
+    """Every row in the table, exactly as stored - one per reconciliation RUN.
+
+    This is the audit view: the deduplicated view drops rows, and a financial
+    control needs to show which rows were dropped and why.
+    """
+    with _lock:
+        fresh = _cache["raw"] is not None and time.time() - _cache["raw_at"] < settings().cache_ttl
+        if fresh and not force:
+            return _cache["raw"]
+        rows = _fetch_raw()
+        _cache.update(raw_at=time.time(), raw=rows)
+        return rows
 
 
 def all_rows(force: bool = False) -> list[dict]:
