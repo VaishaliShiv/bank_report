@@ -57,6 +57,12 @@ report that silently discards rows is not auditable.
 `exposure` is declared on every source and run but is always `null` — the
 narrative cites an exposure figure that the pipeline does not persist.
 
+### Postman
+
+Import `postman_collection.json` — 16 requests across health, report, raw runs,
+dashboard endpoints and error cases. Set the `baseUrl` variable if the API is not
+on `http://localhost:8000`.
+
 ## Layout
 
 | Path | What |

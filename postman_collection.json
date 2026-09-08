@@ -1,0 +1,397 @@
+{
+  "info": {
+    "name": "Payment Reconciliation API",
+    "description": "Partner-file to SAP reconciliation.\n\nSet the `baseUrl` variable to where the API is running (default http://localhost:8000). Start it with run_api.bat.\n\nThe source table is a RUN log: re-running a vendor writes another row for the same business day. So every response separates two views \u2014\n  \u2022 `sources` \u2014 deduplicated, one per vendor. What you report.\n  \u2022 `runs` \u2014 every raw row, all columns. What you prove it from.\n\nEach raw run carries `isAuthoritative` and `supersededBy`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "description": "Where the API is running"
+    },
+    {
+      "key": "date",
+      "value": "2026-07-21",
+      "description": "A business date that has data \u2014 see GET /api/v1/dates"
+    },
+    {
+      "key": "vendorId",
+      "value": "123202",
+      "description": "Vendor to filter runs by"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Liveness",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/healthz",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "healthz"
+              ]
+            },
+            "description": "Is the process up. Never touches storage."
+          }
+        },
+        {
+          "name": "Readiness",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/readyz",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "readyz"
+              ]
+            },
+            "description": "Proves the table is reachable with the configured credential.\nReturns vendorDays (the deduplicated row count), the auth mode, and the dedup strategy in force."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Report",
+      "item": [
+        {
+          "name": "Available dates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/dates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dates"
+              ]
+            },
+            "description": "Every business date that has data, with how many sources and how many raw runs each. Note where runs > sources \u2014 those days had re-runs."
+          }
+        },
+        {
+          "name": "Latest date",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/report/latest",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "report",
+                "latest"
+              ]
+            },
+            "description": "The most recent date, full document."
+          }
+        },
+        {
+          "name": "Report for a date",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/report/{{date}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "report",
+                "{{date}}"
+              ]
+            },
+            "description": "One business date. Blocks: summary, dedup, sources, runs, exceptions.\n\nSet runs=false to omit the raw rows and get a much smaller document."
+          }
+        },
+        {
+          "name": "Report without raw runs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/report/{{date}}?runs=false",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "report",
+                "{{date}}"
+              ],
+              "query": [
+                {
+                  "key": "runs",
+                  "value": "false"
+                }
+              ]
+            },
+            "description": "Summary and deduplicated sources only."
+          }
+        },
+        {
+          "name": "Sources only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/report/{{date}}/sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "report",
+                "{{date}}",
+                "sources"
+              ]
+            },
+            "description": "Deduplicated \u2014 one entry per vendor. This is the reporting view."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Raw runs (audit)",
+      "item": [
+        {
+          "name": "All runs for a date",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/report/{{date}}/runs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "report",
+                "{{date}}",
+                "runs"
+              ]
+            },
+            "description": "Every raw table row for this date, all columns exactly as stored, plus the parsed dates and derived figures.\n\nEach row is flagged isAuthoritative / supersededBy."
+          }
+        },
+        {
+          "name": "Runs for one vendor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/report/{{date}}/runs?vendorId={{vendorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "report",
+                "{{date}}",
+                "runs"
+              ],
+              "query": [
+                {
+                  "key": "vendorId",
+                  "value": "{{vendorId}}"
+                }
+              ]
+            },
+            "description": "Filter to a single vendor. With date=2026-07-21 and vendorId=123202 you get three runs \u2014 one authoritative, two superseded, all with identical figures."
+          }
+        },
+        {
+          "name": "Authoritative runs only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/report/{{date}}/runs?authoritativeOnly=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "report",
+                "{{date}}",
+                "runs"
+              ],
+              "query": [
+                {
+                  "key": "authoritativeOnly",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Just the winning run per vendor \u2014 the raw rows behind the reported numbers."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard endpoints",
+      "item": [
+        {
+          "name": "All vendor-days (flat)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/rows",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rows"
+              ]
+            },
+            "description": "Every deduplicated vendor-day across all dates, flat. This is what the dashboard imports."
+          }
+        },
+        {
+          "name": "Dashboard report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/report?date={{date}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "report"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "{{date}}"
+                }
+              ]
+            },
+            "description": "Flat shape the dashboard renders from."
+          }
+        },
+        {
+          "name": "Trend",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/trend?days=30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "trend"
+              ],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "30"
+                }
+              ]
+            },
+            "description": "Daily aggregates over a window."
+          }
+        },
+        {
+          "name": "Excel export",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/report/excel?date={{date}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "report",
+                "excel"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "{{date}}"
+                }
+              ]
+            },
+            "description": "Downloads a formatted two-sheet workbook for the date.\n\nIn Postman use Send and Download, not plain Send \u2014 otherwise you get binary in the response pane."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error cases",
+      "item": [
+        {
+          "name": "Date with no data (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/report/2026-01-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "report",
+                "2026-01-01"
+              ]
+            },
+            "description": "Returns 404 and lists the dates that DO exist."
+          }
+        },
+        {
+          "name": "Wrong date format (422)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/report/21-07-2026",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "report",
+                "21-07-2026"
+              ]
+            },
+            "description": "Returns 422. The path takes YYYY-MM-DD, not the table's dd-MM-yyyy format."
+          }
+        }
+      ]
+    }
+  ]
+}
