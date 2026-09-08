@@ -57,6 +57,24 @@ report that silently discards rows is not auditable.
 `exposure` is declared on every source and run but is always `null` — the
 narrative cites an exposure figure that the pipeline does not persist.
 
+### Excel export
+
+`GET /api/report/excel?date=2026-07-21` — the same document as a workbook, one
+column per JSON field. The dashboard's download button calls it.
+
+| Sheet | Contents |
+|---|---|
+| `Summary` | headline figures, one per row, plus the dedup note |
+| `Sources` | deduplicated — 29 columns, one row per vendor |
+| `Runs` | every raw table row — 30 columns, `Authoritative` and `Superseded by` first |
+
+Add `?runs=false` to omit the Runs sheet.
+
+Because the workbook is built from the report document rather than from the
+table, a figure cannot differ between the JSON and the spreadsheet. A test
+asserts every JSON field has a column, so adding a field to the API without
+adding it to the export fails the build.
+
 ### Postman
 
 Import `postman_collection.json` — 16 requests across health, report, raw runs,

@@ -129,13 +129,16 @@ def trend(days: int = Query(30, ge=1, le=365)):
 
 
 @app.get("/api/report/excel", dependencies=[Depends(require_key)])
-def report_excel(date_: str = Query(..., alias="date")):
+def report_excel(date_: str = Query(..., alias="date"),
+                 runs: bool = Query(True, description="include the raw Runs sheet")):
+    """The same document /api/v1/report/{date} returns, as a workbook - one
+    column per field, so the spreadsheet and the JSON cannot disagree."""
+    from api.routes_report import report as build_report
     day = _day(date_)
-    rows = store.rows_for(day)
-    if not rows:
-        raise HTTPException(404, f"no reconciliation data for {day.isoformat()}")
-    buf = excel.build(day, [store.serialise(r) for r in rows], store.kpis(rows))
-    log.info(f"built workbook for {day} ({len(rows)} sources)")
+    doc = build_report(day.isoformat(), runs)
+    buf = excel.build(doc)
+    log.info(f"built workbook for {day} "
+             f"({len(doc['sources'])} sources, {doc.get('runCount', 0)} runs)")
     return StreamingResponse(
         buf, media_type=XLSX,
         headers={"Content-Disposition": f'attachment; filename="{excel.filename(day)}"'},

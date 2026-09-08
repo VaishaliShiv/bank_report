@@ -85,3 +85,49 @@ def test_source_carries_provenance():
 def test_pct_handles_zero_denominator():
     assert _pct(5, 0) is None
     assert _pct(1, 4) == 25.0
+
+
+# ---- the workbook is built from the same document the API returns ----
+def test_excel_columns_cover_every_json_field():
+    """A field added to the API but not to the workbook would silently vanish
+    from the export. Catch that here, not in a finance meeting."""
+    from api.excel import SOURCE_COLS, RUN_COLS
+    src = serialise_source(enrich(dedupe([R1, R3])[0]))
+    run_doc = serialise_run(R3, "aaaa3")
+
+    def leaves(obj, prefix=""):
+        out = set()
+        for k, v in obj.items():
+            path = f"{prefix}{k}"
+            if isinstance(v, dict):
+                out |= leaves(v, path + ".")
+            else:
+                out.add(path)
+        return out
+
+    # constant per document, stated once on the Summary sheet rather than
+    # repeated down a column
+    CONSTANT = {"amount.currency"}
+
+    missing_src = leaves(src) - {p for _, p, _ in SOURCE_COLS} - CONSTANT
+    assert not missing_src, f"Sources sheet is missing: {sorted(missing_src)}"
+    missing_run = leaves(run_doc) - {p for _, p, _ in RUN_COLS} - CONSTANT
+    assert not missing_run, f"Runs sheet is missing: {sorted(missing_run)}"
+
+def test_excel_builds_from_a_report_document():
+    from api.excel import build
+    import openpyxl
+    rows = [enrich(r) for r in dedupe([R1, R3])]
+    doc = {"date": "2025-03-10", "generatedAt": "2025-03-10T00:00:00Z", "currency": "AED",
+           "summary": summarise(rows),
+           "dedup": {"strategy": "latest", "runsCollapsed": 1,
+                     "sourcesWithVariedFigures": []},
+           "sources": [serialise_source(r) for r in rows],
+           "runs": [serialise_run(R3, "aaaa3"), serialise_run(R1, "aaaa3")],
+           "runCount": 2}
+    wb = openpyxl.load_workbook(build(doc))
+    assert wb.sheetnames == ["Summary", "Sources", "Runs"]
+    assert wb["Sources"].max_row == 2                 # header + one vendor
+    assert wb["Runs"].max_row == 3                    # header + both runs
+    auth = [c.value for c in wb["Runs"]["A"]][1:]
+    assert auth == ["Yes", "No"]                      # winner first, then superseded
