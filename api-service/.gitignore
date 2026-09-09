@@ -1,0 +1,12 @@
+# az webapp up honours this file — anything listed is not uploaded
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+tests/
+deploy/
+*.md
