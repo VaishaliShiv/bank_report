@@ -85,12 +85,13 @@ on `http://localhost:8000`.
 
 | Path | What |
 |---|---|
-| `web/` | **The dashboard.** Served at `/` by the API |
-| `recon/dedup.py` | The dedup + derived-field rules. The heart of this repo. |
-| `api/` | FastAPI: dashboard, JSON API, Excel export |
-| `tests/` | 18 tests — dedup rules and config guards |
+| `api-service/` | **The deployable API.** Self-contained — see its own README |
+| `web/` | The dashboard. Served at `/` when the repo is checked out whole |
+| `api-service/recon/dedup.py` | The dedup + derived-field rules. The heart of this repo. |
+| `reconciliation_report.py` | Standalone JSON report — one file + `.env`, no server |
+| `api-service/tests/` | 31 tests — dedup rules, API contract, config guards |
 | `run_api.bat` / `.sh` | Local launchers |
-| `deploy/`, `Dockerfile` | **Azure only. Not needed locally — ignore for now.** |
+| `api-service/deploy/` | Azure deployment — Container Apps or App Service, one command |
 
 Diagnostics: `test_connection.py`, `discover_table.py`, `impact.py`.
 

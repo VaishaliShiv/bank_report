@@ -45,15 +45,28 @@ app.add_middleware(
 app.include_router(report_router)
 
 XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-WEB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web")
+# This service is a JSON API. The dashboard lives outside it and is not part of
+# the deployed image - but when the repo is checked out whole, serve it locally
+# so you can develop against the real API without a second server.
+_HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+WEB = os.path.join(os.path.dirname(_HERE), "web")
 
 if os.path.isdir(WEB):
     app.mount("/static", StaticFiles(directory=WEB), name="static")
 
     @app.get("/", include_in_schema=False)
     def dashboard():
-        """The web dashboard. Everything it needs is under /api."""
         return FileResponse(os.path.join(WEB, "index.html"))
+else:
+    @app.get("/", include_in_schema=False)
+    def root():
+        """No dashboard in this deployment - point callers at the API."""
+        return {"service": "Payment Reconciliation API", "version": "1.0.0",
+                "endpoints": ["/healthz", "/readyz", "/api/v1/dates",
+                              "/api/v1/report/latest", "/api/v1/report/{date}",
+                              "/api/v1/report/{date}/sources",
+                              "/api/v1/report/{date}/runs",
+                              "/api/report/excel?date={date}"]}
 
 
 def require_key(request: Request, token: str | None = Query(None)):

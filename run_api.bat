@@ -3,7 +3,7 @@ REM ===================================================================
 REM  Payment Reconciliation API - Windows launcher
 REM  Starts the dashboard. Leave the window open while you use it.
 REM ===================================================================
-cd /d "%~dp0"
+cd /d "%~dp0api-service"
 
 if not exist .venv (
     echo Creating virtual environment...
@@ -13,7 +13,7 @@ if not exist .venv (
     .venv\Scripts\pip install --quiet -r requirements.txt || goto :err
 )
 
-if not exist .env (
+if not exist .env if not exist ..\.env (
     echo.
     echo   ERROR: .env not found.
     echo   Copy .env.example to .env and paste your storage connection string.
